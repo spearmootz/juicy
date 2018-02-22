@@ -2,30 +2,41 @@ const React = require('react');
 const autobind = require('react-autobind');
 const R = require('ramda');
 const _ = require('lodash');
-const Nav = require('./Nav');
+const Header = require('./Header');
+const Footer = require('./Footer');
 const Repl = require('./Repl');
 const Sidebar = require('./Sidebar');
 const Loading = require('./Loading');
 const MONACO_THEMES = require('../constants/monaco-themes');
 
 const headerHeight = 50;
+const footerHeight = 20;
 const sidebarWidth = 200;
 const REPL_ID = 'repl';
 
 const {
     packageNames,
-    packageAliases,
+    aliases: packageAliases,
     packages,
     packageMethods,
     packageVersions,
     hideHeader,
+    headerLogoFilename,
+    headerTitle,
+    headerSubtitle,
+    headerColor,
+    headerFontColor,
+    spinnerFilename,
+    spinnerBgColor,
 } = window.JUICY_REPL_CONFIG;
 
 // eslint-disable-next-line import/no-unresolved
 const definedThemes = require('../../dist/repl-themes.js');
 
+const headerFooterHeight = hideHeader ? footerHeight : headerHeight + footerHeight;
+
 const fullHeight = {
-    height: hideHeader ? '100%' : `calc(100% - ${headerHeight}px)`,
+    height: `calc(100% - ${headerFooterHeight}px)`,
     position: 'relative',
     top: hideHeader ? 0 : `${headerHeight}px`,
 };
@@ -92,11 +103,26 @@ class App extends React.Component {
 
     render() {
         const { loading } = this.state;
-        const color = loading ? '#8ee600' : this.state.stringColor;
+        const color = loading && headerColor ? headerColor : this.state.stringColor;
         return (
             <div style={{ height: '100%' }}>
-                {loading && <Loading color={color} />}
-                {!hideHeader && <Nav color={color} />}
+                {loading && (
+                    <Loading
+                        color={color}
+                        spinnerFilename={spinnerFilename}
+                        spinnerBgColor={spinnerBgColor}
+                    />
+                )}
+                {!hideHeader && (
+                    <Header
+                        color={color}
+                        headerColor={headerColor || undefined}
+                        headerLogoFilename={headerLogoFilename || undefined}
+                        headerTitle={headerTitle || undefined}
+                        headerSubtitle={headerSubtitle || undefined}
+                        headerFontColor={headerFontColor || undefined}
+                    />
+                )}
                 <Repl
                     id={REPL_ID}
                     style={replStyle}
@@ -116,6 +142,7 @@ class App extends React.Component {
                     stringColor={color}
                     cache={this.state.cache}
                 />
+                <Footer />
             </div>
         );
     }
